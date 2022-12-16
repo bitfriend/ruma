@@ -9,9 +9,12 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 
 use crate::{
-    events::relation::{InReplyTo, Replacement, Thread},
+    events::{
+        room::ImageInfo,
+        relation::{InReplyTo, Replacement, Thread},
+    },
     serde::{JsonObject, StringEnum},
-    OwnedEventId, PrivOwnedStr,
+    OwnedEventId, OwnedMxcUri, PrivOwnedStr,
 };
 
 mod audio;
@@ -86,6 +89,16 @@ impl RoomMessageEventContent {
     #[cfg(feature = "markdown")]
     pub fn text_markdown(body: impl AsRef<str> + Into<String>) -> Self {
         Self::new(MessageType::text_markdown(body))
+    }
+
+    /// A constructor to create an image message.
+    pub fn image(body: String, url: OwnedMxcUri, info: Option<Box<ImageInfo>>) -> Self {
+        Self::new(MessageType::image(body, url, info))
+    }
+
+    /// A constructor to create a file message.
+    pub fn file(body: String, url: OwnedMxcUri, info: Option<Box<FileInfo>>) -> Self {
+        Self::new(MessageType::file(body, url, info))
     }
 
     /// A constructor to create a plain text notice.
@@ -473,6 +486,16 @@ impl MessageType {
     #[cfg(feature = "markdown")]
     pub fn text_markdown(body: impl AsRef<str> + Into<String>) -> Self {
         Self::Text(TextMessageEventContent::markdown(body))
+    }
+
+    /// A constructor to create an image message.
+    pub fn image(body: String, url: OwnedMxcUri, info: Option<Box<ImageInfo>>) -> Self {
+        Self::Image(ImageMessageEventContent::plain(body, url, info))
+    }
+
+    /// A constructor to create a file message.
+    pub fn file(body: String, url: OwnedMxcUri, info: Option<Box<FileInfo>>) -> Self {
+        Self::File(FileMessageEventContent::plain(body, url, info))
     }
 
     /// A constructor to create a plain text notice.
